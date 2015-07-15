@@ -1,1 +1,338 @@
-hola
+?php session_start();
+	include ("../coneccion.php");
+	error_reporting(E_ALL ^ E_NOTICE);
+	$id=$_GET['id'];
+?>	
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Formulario Ticket</title>
+		<link type="text/css" href="css/style2.css" rel="stylesheet" />
+	</head>
+	<body>
+		<?php
+				$consulta="
+				SELECT nombre, id_incidencia, f.id_departamento, descripcion_departamento, nombre_tecnico, 
+				descripcion_estado, descripcion_falla, descripcion_prioridad,
+				id_activo_fijo, date(fecha_inicio) as fecha, time (fecha_inicio)as hora, 
+				id_usuario_reportado, titulo_incidencia, observacion, descripcion_incidencia
+				from usuario u 
+				inner join incidencia i on u.id_usuario=i.id_usuario_cliente 
+				inner join falla f on f.id_falla=i.id_falla
+				inner join departamento d on d.id_departamento=f.id_departamento
+				inner join tecnico t on t.id_usuario_tecnico=i.id_usuario_tecnico
+				inner join estado e on e.id_estado=i.id_estado
+				inner join prioridad p on p.id_prioridad=i.id_prioridad
+				inner join tipo_incidencia ti on ti.id_tipo_incidencia=i.id_tipo_incidencia
+				where id_incidencia= {$id}";
+				$datos1 = mysql_query($consulta, $conexion);
+				while ($fila = mysql_fetch_array($datos1))	{
+					$nombre=$fila['nombre'];
+					$nombre_tecnico=$fila['nombre_tecnico'];
+					$descripcion_estado=$fila['descripcion_estado'];
+					$descripcion_falla=$fila['descripcion_falla'];
+					$descripcion_prioridad=$fila['descripcion_prioridad'];
+					$id_activo_fijo=$fila['id_activo_fijo'];
+					$fecha=$fila['fecha'];
+					$hora=$fila['hora'];
+					echo $id_usuario_reportado=$fila['id_usuario_reportado'];
+					$titulo_incidencia=$fila['titulo_incidencia'];
+					$observacion=$fila['observacion'];
+					$id_departamento=$fila['id_departamento'];
+					$descripcion_departamento=$fila['descripcion_departamento'];
+					$descripcion_incidencia=$fila['descripcion_incidencia'];
+				}
+				$consulta1="
+				SELECT id_etapa, date(fecha_detalle) as fecha_detalle , time(fecha_detalle) as hora_detalle, tecnico,detalle  from detalle_incidencia where id_incidencia= {$id}";
+				$datos1 = mysql_query($consulta1, $conexion);
+				while ($fila = mysql_fetch_array($datos1)){
+					$id_etapa=$fila['id_etapa'];
+					$fecha_detalle=$fila['fecha_detalle'];
+					$hora_detalle=$fila['hora_detalle'];
+					$tecnico=$fila['tecnico'];
+					$detalle=$fila['detalle'];
+				}
+				$consulta3="
+				SELECT * from usuario where id_usuario={$id_usuario_reportado}";
+				$datos3 = mysql_query($consulta3, $conexion);
+				while ($fila = mysql_fetch_array($datos3)){
+					$nombreReportado=$fila['nombre'];
+				}
+				if($id_etapa==''){?>
+					<form action='' method='POST'>
+						<input type='hidden' name='id' value='<?php echo $id; ?>'>
+						<input type='hidden' name='idDepartamento' value='<?php echo $idDepartamento; ?>'>
+						<input type='hidden' name='id_departamento' value='<?php echo $id_departamento; ?>'>
+						<input type='hidden' name='id_etapa' value='<?php echo $id_etapa; ?>'>
+						<table>
+							<tr>
+								<td colspan='6'>
+									<input type='submit' value='Guardar' name='guardar' class='boton'>
+								</td>
+							</tr>
+							<tr>
+								<td colspan='5' align='right'><label>Ticket:</label></td>
+								<td><input type='text' name='id' value='<?php echo $id?>' readonly></td>
+							</tr>
+							<tr>
+								<td><label>Departamento:</label></td>
+								<td><input type='text' name='descripcion_departamento' value='<?php echo $descripcion_departamento; ?>' readonly></td>
+								<td><label>Incidencia:</label></td>
+								<td><input type='text' name='descripcion_falla' value='<?php echo $descripcion_falla; ?>' readonly></td>
+								<td><label>Tecnico:</label></td>
+								<td><input type='text' name='nombre_tecnico' value='<?php echo $nombre_tecnico; ?>' readonly></td>
+							</tr>
+							<tr>
+								<td><label>Usuario Afectado:</label></td>
+								<td><input type='text' name='nombre' value='<?php echo $nombre; ?>' readonly></td>
+								<td><label>Estado:</label></td>
+								<td><input type='text' name='descripcion_estado' value='<?php echo $descripcion_estado; ?>' readonly></td>
+								<td><label>Reportado Por :</label></td>
+								<td><input type='text' name='nombreReportado' value='<?php echo $nombreReportado; ?>' readonly></td>	
+							</tr>
+							<tr>
+								<td><label>Tipo Incidencia:</label></td>
+								<td><input type='text' name='descripcion_incidencia'  value='<?php echo $descripcion_incidencia?>' readonly></td>
+								<td><label>Prioridad:</label></td>
+								<td><input type='text' name='descripcion_prioridad' value='<?php echo $descripcion_prioridad?>' readonly></td>
+								<td><label>Activo fijo:</label></td>
+								<td><input type='text' name='id_activo_fijo' value='<?php echo $id_activo_fijo?>' readonly></td>
+							</tr>
+							<tr>
+								<td><label>Fecha:</label></td>
+								<td><input type='text' name='fecha'  value='<?php echo $fecha?>' readonly></td>
+								<td><label>Hora:</label></td>
+								<td colspan='3'><input type='text' name='hora' value='<?php echo $hora?>' readonly></td>
+							</tr>
+							<tr>
+								<td><label>Titulo Incidencia:</label></td>
+								<td colspan='5'><input type='text' name='titulo_incidencia' id='tituloincidencia'  value='<?php echo $titulo_incidencia?>' readonly></td>
+							</tr>
+							<tr>
+								<td><label>Descripcion:</label></td>
+								<td colspan='5'><textarea  rows="6" cols= "66" name="observacion" readonly><?php echo $observacion?></textarea></td>
+							</tr>
+							<tr>
+								<td colspan='6' align='center'><h3>Solucion etapa nivel 1</h3></td>
+							</tr>
+							<tr>
+								<td colspan='3' align='right'><label>Fecha:</label></td>
+								<td><input type='text' name='fecha_detalle' value='<?php echo $fecha;?>' readonly></td>
+								<td><label>Hora:</label></td>
+								<td><input type='text' name='hora_detalle' value='<?php echo $hora;?>' readonly></td>
+							</tr>
+							<tr>
+								<td colspan='3' align='right'><label>Nivel Incidencia:</label></td>
+								<td>
+									<select name='nivel' id='nivel'  required='require'>
+										<option value=''>--</option>
+										<option value='6'>On-Site</option>
+										<option value='1'>Telefono</option>
+										<option value='2'>Remoto</option>
+										<option value='3'>Terreno</option>
+										<option value='4'>Externo</option>
+									</select>
+								</td>
+								<td><label>Estado:</label></td>
+								<td>
+									<select name='estado' id='estado'  required='require'>
+										<option value=''>--</option>
+										<option value='1'>Abierto</option>
+										<option value='2'>En proceso</option>
+										<option value='5'>Cerrado</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td><label>Tecnico:</label></td><?php
+									$consulta_mysql="SELECT * FROM tecnico where id_departamento_tecnico='{$id_departamento}' order by nombre_tecnico asc";
+									$resultado_consulta_mysql=mysql_query($consulta_mysql,$conexion);?>
+								<td><select name='id_tecnico' id='id_tecnico'  required='require'>
+										<option value=''>--</option><?php
+										while($fila=mysql_fetch_array($resultado_consulta_mysql))
+										{
+											echo "<option value='".$fila['id_usuario_tecnico']."'>".$fila['nombre_tecnico']."</option>";
+										}?>
+									</select></td>
+								<td><label>Prioridad:</label></td><?php
+									$consulta_mysql="SELECT * FROM prioridad";
+									$resultado_consulta_mysql=mysql_query($consulta_mysql,$conexion);?>
+								<td><select name='id_prioridad' id='id_prioridad'  required='require'>
+										<option value=''>--</option><?php
+										while($fila=mysql_fetch_array($resultado_consulta_mysql))
+										{
+											echo "<option value='".$fila['id_prioridad']."'>".$fila['descripcion_prioridad']."</option>";
+										}?>
+									</select></td>
+								<td><label>Activo Fijo:</label></td>
+								<td><input type='text' name='id_activo_fijo' value='<?php echo $id_activo_fijo ?>'  required='require'></td>
+							</tr>
+							<tr>
+								<td><label>Descripcion:</label></td>
+								<td colspan='6'><textarea  rows='6' cols= '66' name='detalle'   required='require'></textarea></td>
+							</tr>
+						</table>
+					</form><?php
+				}
+				else{?>
+					<form action='' method='POST'>
+						<input type='hidden' name='id_departamento' value='<?php echo $id_departamento; ?>'>
+						<input type='hidden' name='id_etapa' value='<?php echo $id_etapa; ?>'>
+						<input type='hidden' name='id' value='<?php echo $id; ?>'>
+						<table>
+							<tr>
+								<td colspan='6'>
+									<input type='submit' value='Guardar' name='guardar1' class='boton'>
+								</td>
+							</tr>
+							<tr>
+								<td colspan='5' align='right'><label>Ticket:</label></td>
+								<td><input type='text' name='id' value='<?php echo $id?>' readonly></td>
+							</tr>
+							<tr>
+								<td><label>Departamento:</label></td>
+								<td><input type='text' name='descripcion_departamento' value='<?php echo $descripcion_departamento; ?>' readonly></td>
+								<td><label>Incidencia:</label></td>
+								<td><input type='text' name='descripcion_falla' value='<?php echo $descripcion_falla; ?>' readonly></td>
+								<td><label>Tecnico:</label></td>
+								<td><input type='text' name='nombre_tecnico' value='<?php echo $nombre_tecnico; ?>' readonly></td>
+							</tr>
+							<tr>
+								<td><label>Usuario Afectado:</label></td>
+								<td><input type='text' name='nombre' value='<?php echo $nombre; ?>' readonly></td>
+								<td><label>Estado:</label></td>
+								<td><input type='text' name='descripcion_estado' value='<?php echo $descripcion_estado; ?>' readonly></td>
+					 			<td><label>Reportado Por :</label></td>
+								<td><input type='text' name='reportado' value='<?php echo $reportado; ?>' readonly></td>	
+							</tr>
+							<tr>
+								<td><label>Tipo Incidencia:</label></td>
+								<td><input type='text' name='descripcion_incidencia'  value='<?php echo $descripcion_incidencia?>' readonly></td>
+								<td><label>Prioridad:</label></td>
+								<td><input type='text' name='descripcion_prioridad' value='<?php echo $descripcion_prioridad?>' readonly></td>
+								<td><label>Activo fijo:</label></td>
+								<td><input type='text' name='id_activo_fijo' value='<?php echo $id_activo_fijo?>' readonly></td>
+							</tr>
+							<tr>
+								<td><label>Fecha:</label></td>
+								<td><input type='text' name='fecha'  value='<?php echo $fecha?>' readonly></td>
+								<td><label>Hora:</label></td>
+								<td colspan='3'><input type='text' name='hora' value='<?php echo $hora?>' readonly></td>
+							</tr>
+							<tr>
+								<td><label>Titulo Incidencia:</label></td>
+								<td colspan='5'><input type='text' name='titulo_incidencia' id='tituloincidencia'  value='<?php echo $titulo_incidencia?>' readonly></td>
+							</tr>
+							<tr>
+								<td><label>Descripcion:</label></td>
+								<td colspan='5'><textarea  rows="6" cols= "66" name="observacion" readonly><?php echo $observacion?></textarea></td>
+							</tr><?php
+							$consulta2="
+							SELECT descripcion_etapa,descripcion_nivel, date(fecha_detalle) as fecha_detalle, 
+							time(fecha_detalle) as hora_detalle, detalle,tecnico
+							from detalle_incidencia di inner join nivel n on n.id_nivel=di.id_nivel
+							inner join etapa e on e.id_etapa=di.id_etapa
+							where id_incidencia= {$id}";
+							$datos2 = mysql_query($consulta2, $conexion);
+							while ($fila = mysql_fetch_array($datos2))
+							{
+								echo "<tr>";
+									echo "<td colspan='6' align='center'><h3>".$fila['descripcion_etapa']."</h3></td>";
+								echo "</tr>";
+								echo "<tr>";
+									echo "<td><label>Tecnico:</label></td>";
+									echo "<td><input type='text' name='tecnico' value='".$fila['tecnico']."' readonly></td>";
+									echo "<td><label>Fecha:</label></td>";
+									echo "<td><input type='text' name='fecha_detalle' value='".$fila['fecha_detalle']."' readonly></td>";
+									echo "<td><label>Hora:</label></td>";
+									echo "<td><input type='text' name='hora_detalle' value='".$fila['hora_detalle']."' readonly></td>";
+								echo "</tr>";
+								echo "<tr>";
+									echo "<td><label>Nivel Incidencia:</label></td>";
+									echo "<td><input type='text' name='descripcion_nivel' value='".$fila['descripcion_nivel']."' readonly></td>";
+									echo "<td><label>Estado:</label></td>";
+									echo "<td colspan='3'><input type='text' name='descripcion_nivel' value='$descripcion_estado' readonly></td>";
+								echo "</tr>";
+								echo "<tr>";
+									echo "<td><label>Descripcion:</label></td>";
+									echo "<td colspan='6'><textarea  rows='6' cols= '66' name='detalle' >".$fila['detalle']."</textarea></td>";
+								echo "</tr>";
+							}	
+							echo "<tr>";
+								echo "<td><label>Estado:</label></td>";
+								echo "<td colspan='3'>";
+									echo "<select name='estado' id='estado'  required='require'>";
+										echo "<option value=''>--</option>";
+										echo "<option value='2'>En proceso</option>";
+										echo "<option value='5'>Cerrado</option>";
+									echo "</select>";
+								echo "</td>";
+								echo "<td><label>Nivel Incidencia:</label></td>";
+								echo "<td>";
+									echo "<select name='nivel1' id='nivel'  required='require'>";
+										echo "<option value=''>--</option>";
+										echo "<option value='1'>Telefono</option>";
+										echo "<option value='2'>Remoto</option>";
+										echo "<option value='3'>Terreno</option>";
+										echo "<option value='4'>Externo</option>";
+									echo "</select>";
+								echo "</td>";
+							echo "</tr>";
+						echo "</table>";
+					echo "</form>";
+				}?>
+			</div>
+		</div>
+	</body>
+</html>
+	
+
+<?php
+	if(isset($_POST["guardar"]))
+	{ 
+		$id_tecnico=$_POST['id_tecnico'];
+		$id_prioridad=$_POST['id_prioridad'];
+		$id_activo_fijo=$_POST['id_activo_fijo'];
+		$id=$_POST['id'];
+		$id_nivel=$_POST['nivel'];
+		$idDepartamento=$_POST['id_departamento'];
+		$detalle=$_POST['detalle'];
+		$estado=$_POST['estado'];
+		$consulta_mysql="SELECT * FROM tecnico where id_usuario_tecnico='{$id_tecnico}'";
+		$resultado_consulta_mysql=mysql_query($consulta_mysql,$conexion);
+		while($fila=mysql_fetch_array($resultado_consulta_mysql))
+		{
+			$nombre_tecnico=$fila['nombre_tecnico'];
+		}
+		$insertarIncidencia=mysql_query("INSERT INTO detalle_incidencia
+		(id_incidencia,id_etapa, id_nivel, detalle, tecnico) VALUES 
+		('{$id}',1,'{$id_nivel}','{$detalle}','{$nombre_tecnico}')");
+		$sql="UPDATE incidencia SET  id_usuario_tecnico='$id_tecnico' ,id_estado='$estado',id_prioridad='$id_prioridad', id_activo_fijo='$id_activo_fijo' WHERE id_incidencia='$id'";
+		$result=mysql_query($sql);
+		echo"<script>alert('Se grabo la incidencia.')</script>";
+		echo "<script LANGUAGE='JavaScript'>location.href='detalle.php?id=$id';</script>";
+	}
+	if(isset($_POST["guardar1"]))
+	{ 
+		$id_etapa=$_POST['id_etapa'];
+		$id=$_POST['id'];
+		$id_nivel=$_POST['nivel1'];
+		$idDepartamento=$_POST['id_departamento'];
+		$detalle=$_POST['detalle'];
+		$estado=$_POST['estado'];
+		$nombre_tecnico=$_POST['nombre_tecnico'];
+		$consulta="SELECT * FROM detalle_incidencia WHERE id_incidencia='{$id}' order by id_detalle_incidencia desc limit 1";
+		$datos1 = mysql_query($consulta, $conexion);
+		while ($fila = mysql_fetch_array($datos1))
+		{
+			$id_detalle_incidencia=$fila['id_detalle_incidencia'];
+		}
+		$sql1="UPDATE detalle_incidencia SET id_nivel='$id_nivel', detalle='$detalle' WHERE id_detalle_incidencia='$id_detalle_incidencia'";
+		$result1=mysql_query($sql1);
+		$sql="UPDATE incidencia SET id_estado='$estado' WHERE id_incidencia='$id'";
+		$result=mysql_query($sql);
+		echo"<script>alert('Se grabo la incidencia.')</script>";
+		echo "<script LANGUAGE='JavaScript'>location.href='detalle.php?id=$id';</script>";
+	}
+?>
+	
